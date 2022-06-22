@@ -1,118 +1,176 @@
-/*Queue implementation using array*/
 #include<stdio.h>
-#include<stdlib.h>
+#include<stdlib.h>      
+#include<ctype.h>     
+#include<string.h>
 
-#define size 3
-int rear=-1;
-int front=-1;
-int queue[size];
+#define SIZE 100
 
-int isfull()
+
+char stack[SIZE];
+int top = -1;
+
+
+
+void push(char item)
 {
-	if(rear==size-1)
-		return 1;
-	else
-		return 0;
+if(top >= SIZE-1)
+{
+printf("\nStack Overflow.");
+}
+else
+{
+top = top+1;
+stack[top] = item;
+}
 }
 
-int isempty()
+
+char pop()
 {
-	if(rear==-1)
-		return 1;
-	else
-		return 0;
+char item ;
+
+if(top <0)
+{
+printf("stack under flow: invalid infix expression");
+getchar();
+/* underflow may occur for invalid expression */
+/* where ( and ) are not matched */
+exit(1);
+}
+else
+{
+item = stack[top];
+top = top-1;
+return(item);
+}
 }
 
-void enqueue(int value)
+
+
+int is_operator(char symbol)
 {
-	if(isfull())
-		printf("Queue is full\n");
-	else
-	{
-		if(front==-1)
-			front=0;
-		rear++;
-		queue[rear]=value;
-		printf("Inserted element is %d",queue[rear]);
-		printf("\n");
-	}
+if(symbol == '^' || symbol == '*' || symbol == '/' || symbol == '+' || symbol =='-')
+{
+return 1;
+}
+else
+{
+return 0;
+}
 }
 
-void dequeue()
+
+int precedence(char symbol)
 {
-	if(isempty())
-		printf("Queue is empty\n");
-	else
-	{
-		printf("Deleted element is %d",queue[front]);
-		printf("\n");
-		front++;
-		if(front>rear)
-		{
-			front=-1;
-			rear=-1;
-		}
-	}
+if(symbol == '^')/* exponent operator, highest precedence*/
+{
+return(3);
+}
+else if(symbol == '*' || symbol == '/')
+{
+return(2);
+}
+else if(symbol == '+' || symbol == '-')          /* lowest precedence */
+{
+return(1);
+}
+else
+{
+return(0);
+}
 }
 
-void display()
+void InfixToPostfix(char infix_exp[], char postfix_exp[])
 {
-	if(isempty())
-		printf("Queue is empty\n");
-	else
-	{
-		int i;
-		printf("\nQueue elements are:\n");
-		for(i=front;i<=rear;i++)
-		{
-			printf("|___%d___",queue[i]);
-		}
-		printf("|");
-	}
+int i, j;
+char item;
+char x;
+
+push('(');                               /* push '(' onto stack */
+strcat(infix_exp,")");                  /* add ')' to infix expression */
+
+i=0;
+j=0;
+item=infix_exp[i];         /* initialize before loop*/
+
+while(item != '\0')        /* run loop till end of infix expression */
+{
+if(item == '(')
+{
+push(item);
+}
+else if( isdigit(item) || isalpha(item))
+{
+postfix_exp[j] = item;              /* add operand symbol to postfix expr */
+j++;
+}
+else if(is_operator(item) == 1)        /* means symbol is operator */
+{
+x=pop();
+while(is_operator(x) == 1 && precedence(x)>= precedence(item))
+{
+postfix_exp[j] = x;                  /* so pop all higher precendence operator and */
+j++;
+x = pop();                       /* add them to postfix expresion */
+}
+push(x);
+
+push(item);                 /* push current oprerator symbol onto stack */
+}
+else if(item == ')')         /* if current symbol is ')' then */
+{
+x = pop();                   /* pop and keep popping until */
+while(x != '(')                /* '(' encounterd */
+{
+postfix_exp[j] = x;
+j++;
+x = pop();
+}
+}
+else
+{ /* if current symbol is neither operand not '(' nor ')' and nor
+operator */
+printf("\nInvalid infix Expression.\n");        /* the it is illegeal  symbol */
+getchar();
+exit(1);
+}
+i++;
+
+
+item = infix_exp[i]; /* go to next symbol of infix expression */
+} /* while loop ends here */
+if(top>0)
+{
+printf("\nInvalid infix Expression.\n");        /* the it is illegeal  symbol */
+getchar();
+exit(1);
+}
+if(top>0)
+{
+printf("\nInvalid infix Expression.\n");        /* the it is illegeal  symbol */
+getchar();
+exit(1);
 }
 
-void main()
+
+postfix_exp[j] = '\0'; /* add sentinel else puts() fucntion */
+/* will print entire postfix[] array upto SIZE */
+
+}
+
+/* main function begins */
+int main()
 {
-	while(1)
-	{
-		int queue,ch,entry,i;
-		printf("\n1.Enqueue\t\t2. Dequeue\t\t3. Display\t\t4.Exit\t");
-		printf("\nEnter your choice: ");
-		scanf("%d",&ch);
-		switch(ch)
-		{	
-			case 1:
-			{
-				printf("Enter element: ");
-				scanf("%d",&entry);
-				enqueue(entry);
-				break;
-			}
-					
-			case 2:
-			{
-				dequeue();
-				break;
-			}
-			
-			case 3:
-			{
-				display();
-				break;
-			}
-	
-			case 4:
-			{
-				printf("Succesfully exiting program \n");
-				exit(0);
-			}
-			
-			default:
-			{
-				printf("\nError,wrong choice input");
-				printf("\n");
-				break;
-			}
-		}
-	}
+char infix[SIZE], postfix[SIZE];         /* declare infix string and postfix string */
+
+
+printf("Welcome");
+printf("\nEnter Infix expression : ");
+gets(infix);
+
+InfixToPostfix(infix,postfix);                   /* call to convert */
+printf("Postfix Expression: ");
+puts(postfix);                     /* print postfix expression */
+
+return 0;
 }
